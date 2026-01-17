@@ -29,7 +29,7 @@ public class Crosshair : MonoBehaviour
         texture.SetPixel(0, 0, crosshairColor);
         texture.Apply();
 
-        // size / thikness
+        // crosshair lines
         GUI.DrawTexture(new Rect(centerX - lineThickness / 2f, centerY - gapSize - lineLength, lineThickness, lineLength), texture);
 
 
