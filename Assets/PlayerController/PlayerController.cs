@@ -133,6 +133,12 @@ public class PlayerController : MonoBehaviour
         _lookInput = _look.ReadValue<Vector2>();
 
         SetIsSprinting();
+
+        if (_interact.WasPressedThisFrame())
+        {
+            GameObject target = _targetProvider.GetTarget();
+            _interacttionHandler.TryInteract(target,this.gameObject);
+        }
     }
 
     private void FixedUpdate()
