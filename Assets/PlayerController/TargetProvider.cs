@@ -7,18 +7,20 @@ public class TargetProvider : MonoBehaviour
     [SerializeField] private Camera _mainCamera;
 
     [SerializeField] private LayerMask _targetLayerMask;
-    [Range(0,10)]
+    [Range(0, 10)]
     [SerializeField] private float _maxTargetDistance = 100f;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
+    //--- Public Methods ---
+    public Collider GetTarget()
     {
-        
+        if (Physics.Raycast(_mainCamera.transform.position, _mainCamera.transform.forward, out ColliderHit hit, _maxTargetDistance, _targetLayerMask,))
+        {
+            Collider target = hit.collider;
+            return target;
+        }
+        else
+
+        { return null; }
     }
 }
