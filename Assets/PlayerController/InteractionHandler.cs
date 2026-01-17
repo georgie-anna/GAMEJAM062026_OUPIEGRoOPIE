@@ -1,7 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class InteracttionHandler : MonoBehaviour
+public class InteracttionHandler
 {
     public void TryInteract(GameObject target, GameObject interactor)
 

@@ -137,7 +137,7 @@ public class PlayerController : MonoBehaviour
         if (_interact.WasPressedThisFrame())
         {
             GameObject target = _targetProvider.GetTarget();
-            _interacttionHandler.TryInteract(target,this.gameObject);
+            _interacttionHandler.TryInteract(target,gameObject);
         }
     }
 

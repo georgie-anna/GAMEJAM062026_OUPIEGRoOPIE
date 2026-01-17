@@ -12,12 +12,11 @@ public class TargetProvider : MonoBehaviour
 
 
     //--- Public Methods ---
-    public Collider GetTarget()
+    public GameObject GetTarget()
     {
         if (Physics.Raycast(_mainCamera.transform.position, _mainCamera.transform.forward, out RaycastHit hit, _maxTargetDistance, _targetLayerMask))
         {
-            Collider target = hit.collider;
-            return target;
+            return hit.collider.gameObject;
         }
 
         else
