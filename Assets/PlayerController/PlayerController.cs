@@ -32,6 +32,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GroundCheck _groundCheck;
     [SerializeField] private Transform _camTransform;
 
+    [SerializeField] private TargetProvider _targetProvider;
+    private InteracttionHandler _interacttionHandler;
+
     [Tooltip("MoveConfig Asset")]
     [SerializeField] private MoveConfig _moveConfig;
     [SerializeField] private JumpConfig _jumpConfig;
@@ -95,6 +98,7 @@ public class PlayerController : MonoBehaviour
     {
         MappingInptutAction();
         InitializeData();
+        _interacttionHandler = new InteracttionHandler();
     }
 
     private void OnEnable()
