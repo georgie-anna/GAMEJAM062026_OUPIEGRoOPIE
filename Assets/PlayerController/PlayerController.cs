@@ -31,6 +31,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GroundCheck _groundCheck;
     [SerializeField] private Transform _camTransform;
     [SerializeField] private TargetProvider _targetProvider;
+    [Tooltip("Animator für die Spielfigur (auf SK_Elf)")]
+    [SerializeField] private Animator _animator;
 
     private InteractionHandler _interactionHandler;
 
@@ -93,6 +95,11 @@ public class PlayerController : MonoBehaviour
     public bool JustLanded => !_wasGrounded && _isGrounded;
     public bool JustLeftGround => _wasGrounded && !_isGrounded;
 
+    // Animation Parameter Namen
+    private readonly int _speedHash = Animator.StringToHash("Speed");
+    private readonly int _isGroundedHash = Animator.StringToHash("IsGrounded");
+    private readonly int _jumpHash = Animator.StringToHash("Jump");
+
     private void Awake()
     {
         MappingInputAction();
@@ -112,7 +119,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // Maus NUR verstecken wenn kein Game Over aktiv ist
         HandleCursorVisibility();
 
         _moveInput = _move.ReadValue<Vector2>();
@@ -129,6 +135,9 @@ public class PlayerController : MonoBehaviour
             GameObject target = _targetProvider.GetTarget();
             _interactionHandler.TryInteract(target, gameObject);
         }
+
+        // Update Animationen
+        UpdateAnimations();
     }
 
     private void FixedUpdate()
@@ -146,16 +155,38 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// Behandelt die Sichtbarkeit des Cursors
-    /// Maus wird freigegeben wenn Game Over Screen aktiv ist
+    /// Aktualisiert die Animationen basierend auf Spieler-Status
     /// </summary>
+    private void UpdateAnimations()
+    {
+        if (_animator == null) return;
+
+        // Berechne Bewegungsgeschwindigkeit (0 = Idle, 1 = Walk, 2 = Sprint)
+        float speed = 0f;
+        if (_moveInput.magnitude > 0.1f)
+        {
+            speed = _isSprinting ? 2f : 1f;
+        }
+
+        // Setze Animation Parameter
+        _animator.SetFloat(_speedHash, speed);
+        _animator.SetBool(_isGroundedHash, _isGrounded);
+    }
+
+    /// <summary>
+    /// Triggert die Sprung-Animation
+    /// </summary>
+    private void TriggerJumpAnimation()
+    {
+        if (_animator == null) return;
+        _animator.SetTrigger(_jumpHash);
+    }
+
     private void HandleCursorVisibility()
     {
-        // Prüfe ob Game Over aktiv ist
         bool isGameOverActive = false;
         if (GameOverUI.Instance != null && GameOverUI.Instance.gameObject.activeInHierarchy)
         {
-            // Checke ob das Panel aktiv ist
             isGameOverActive = true;
         }
 
@@ -176,18 +207,12 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Aktiviert Mouse Control (für Game Over Screen)
-    /// </summary>
     public void EnableMouseControl()
     {
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
     }
 
-    /// <summary>
-    /// Deaktiviert Mouse Control (für normales Gameplay)
-    /// </summary>
     public void DisableMouseControl()
     {
         if (_hideMouse)
@@ -197,9 +222,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Behandelt die Kamera/Look-Steuerung mit anpassbarem Multiplikator für X und Y
-    /// </summary>
     private void HandleLook()
     {
         Vector2 adjustedLookInput = new Vector2(
@@ -268,6 +290,7 @@ public class PlayerController : MonoBehaviour
         if (_jumpBehaviour.Jump(JumpData))
         {
             _jumpBufferCounter = 0f;
+            TriggerJumpAnimation(); // Sprung-Animation triggern
         }
     }
 
@@ -314,11 +337,9 @@ public class PlayerController : MonoBehaviour
         _lookBehaviour = new(_rb, _lookConfig, _camTransform);
         JumpData = new JumpStateData();
 
-        // Movement-Einstellungen an MoveBehaviour übergeben
         _moveBehaviour.MoveSpeedMultiplier = _moveSpeedMultiplier;
         _moveBehaviour.SprintSpeedMultiplier = _sprintSpeedMultiplier;
 
-        // Jump-Einstellungen an JumpBehaviour übergeben
         _jumpBehaviour.JumpForceMultiplier = _jumpForceMultiplier;
         _jumpBehaviour.FallMultiplier = _fallMultiplier;
         _jumpBehaviour.LowJumpMultiplier = _lowJumpMultiplier;
