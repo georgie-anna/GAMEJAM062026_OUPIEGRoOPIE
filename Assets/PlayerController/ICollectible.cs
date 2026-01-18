@@ -1,7 +1,10 @@
 using UnityEngine;
 
+/// <summary>
+/// Interface für alle sammelbaren Objekte
+/// </summary>
 public interface ICollectible
 {
-    void collect(GameObject collector);
-
+    // Großgeschrieben: Collect statt collect
+    void Collect(GameObject collector);
 }

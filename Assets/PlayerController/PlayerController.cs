@@ -5,7 +5,8 @@
 * Author  : Eric Rosenberg
 *
 * Description :
-* *
+* Hauptsteuerung für den Spieler-Charakter
+* 
 * History :
 * xx.xx.2025 ER Created
 ******************************************************************************/
@@ -13,8 +14,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
-
 
 public struct JumpStateData
 {
@@ -25,15 +24,15 @@ public struct JumpStateData
 
 public class PlayerController : MonoBehaviour
 {
-    //--- Depedndencies ---
+    //--- Dependencies ---
     [Header("Dependencies")]
     [Tooltip("Rigibody from Player")]
     [SerializeField] private Rigidbody _rb;
     [SerializeField] private GroundCheck _groundCheck;
     [SerializeField] private Transform _camTransform;
-
     [SerializeField] private TargetProvider _targetProvider;
-    private InteracttionHandler _interacttionHandler;
+
+    private InteractionHandler _interactionHandler;
 
     [Tooltip("MoveConfig Asset")]
     [SerializeField] private MoveConfig _moveConfig;
@@ -96,9 +95,9 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        MappingInptutAction();
+        MappingInputAction();
         InitializeData();
-        _interacttionHandler = new InteracttionHandler();
+        _interactionHandler = new InteractionHandler();
     }
 
     private void OnEnable()
@@ -113,17 +112,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // hide / appear cursor
-        if (_hideMouse)
-        {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-        }
-        else
-        {
-            Cursor.visible = true;
-            Cursor.lockState = CursorLockMode.None;
-        }
+        // Maus NUR verstecken wenn kein Game Over aktiv ist
+        HandleCursorVisibility();
 
         _moveInput = _move.ReadValue<Vector2>();
         if (_jump.WasPressedThisFrame())
@@ -137,7 +127,7 @@ public class PlayerController : MonoBehaviour
         if (_interact.WasPressedThisFrame())
         {
             GameObject target = _targetProvider.GetTarget();
-            _interacttionHandler.TryInteract(target,gameObject);
+            _interactionHandler.TryInteract(target, gameObject);
         }
     }
 
@@ -153,6 +143,58 @@ public class PlayerController : MonoBehaviour
 
         // Better Jump Physics
         _jumpBehaviour.UpdateJumpPhysics(_jump.IsPressed());
+    }
+
+    /// <summary>
+    /// Behandelt die Sichtbarkeit des Cursors
+    /// Maus wird freigegeben wenn Game Over Screen aktiv ist
+    /// </summary>
+    private void HandleCursorVisibility()
+    {
+        // Prüfe ob Game Over aktiv ist
+        bool isGameOverActive = false;
+        if (GameOverUI.Instance != null && GameOverUI.Instance.gameObject.activeInHierarchy)
+        {
+            // Checke ob das Panel aktiv ist
+            isGameOverActive = true;
+        }
+
+        if (_hideMouse && !isGameOverActive)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+        else if (isGameOverActive)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+    }
+
+    /// <summary>
+    /// Aktiviert Mouse Control (für Game Over Screen)
+    /// </summary>
+    public void EnableMouseControl()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    /// <summary>
+    /// Deaktiviert Mouse Control (für normales Gameplay)
+    /// </summary>
+    public void DisableMouseControl()
+    {
+        if (_hideMouse)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
     }
 
     /// <summary>
@@ -255,7 +297,7 @@ public class PlayerController : MonoBehaviour
         _jumpBehaviour.ResetJumpCountGround();
     }
 
-    private void MappingInptutAction()
+    private void MappingInputAction()
     {
         _inputAction = new();
         _move = _inputAction.Player.Move;
